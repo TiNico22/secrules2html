@@ -1,13 +1,14 @@
 #!/usr/bin/perl
-# Use it under GPLv2
-#
+# use it under GPLv2
+# TiNico22
 # Generate an HTML table with sec rules key
 # Input         : sec rules file such as myrules.sec
 # Output        : result.html in the cuurrent directory
 # Usage         : perl secrules2html.mini.pl FILENAME
- 
+
 use feature ':5.10';
 
+my $ARGC = scalar(@ARGV);
 my $MAXSECFILESIZE=1048576; ## 1Mb
 my @array;
 $array[0][0]="ID";
@@ -24,6 +25,14 @@ $array[0][10]="action2";
 $array[0][11]="thresh2";
 $array[0][12]="window2";
 
+# Usage
+sub usage_display {
+  print "USAGE\
+ perl secrules2html.mini.pl SECRULESFILE [OUTPUTNAME]\
+ SECRULESFILE   : the file with sec rules such as myrules.sec\
+ OUTPUTNAME     : Optional, default value is index.html\n";
+}
+
 # replace "key=value" by "value" only 
 sub valueonly {
   $valueonly = $_[0] =~ s/.*\=(.*)/\1/g;
@@ -31,20 +40,25 @@ sub valueonly {
 }
 
 print "Trying to convert sec rules config files (.sec) to an HTML output\n";
-
-# Open output file
-open (FOUT, '>', 'result.html');
-
 # check if a file to convert is provided
-die "File is not available" unless (@ARGV ==1);
-
+if ($ARGC == 0){ # no filename provided
+  usage_display();
+  die "File is not available";
+} elsif ($ARGC == 1){
+    print "No output file provided, using index.html as output file\n";
+    open (FOUT, '>', 'index.html');
+} elsif ($ARGC == 2){
+    print "Output file  $ARGV[1]\n";
+    open (FOUT, '>', $ARGV[1]);
+}
 #check if the file is not too big
 open( my $fh_in, '<', $ARGV[0] ) or die "Can't open $ARGV[0] $!\n";
 my $filesize_in= -s $fh_in;
-say "$filesize_in file size in byte, max file size is $MAXSECFILESIZE";
 if ( $filesize_in > $MAXSECFILESIZE ){
+    say "$filesize_in file size in byte, max file size is $MAXSECFILESIZE";
     die "Sec rules file is too big";
 }
+
 my $id=1;
 while (<$fh_in>) {
   if (/^type=/ .. /\n\n/) {
