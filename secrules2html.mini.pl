@@ -49,7 +49,63 @@ sub titlevalueonly {
   $titlevalueonly = $_[0] =~ s/.*\=Title:(.*)/$1/g;
   return $titlevalueonly;
 }
-
+sub printSW2T {
+# Print 1st line
+print FOUT "<tr>";
+# print 0 to 4 rowspan=2
+  my $i = $_[0];
+  for ( my $j = 0 ; $j <= 4; $j++ ){
+    print FOUT "<td rowspan=2>";
+    if (defined $array[$i][$j] && $array[$i][$j] ne '') {
+        print FOUT $array[$i][$j];
+    }
+    print FOUT "</td>";
+  }
+# print 5 to 8 desc1 ...
+  for ( my $j = 5 ; $j <= 8; $j++ ){
+    print FOUT "<td>";
+    if (defined $array[$i][$j] && $array[$i][$j] ne '') {
+        print FOUT $array[$i][$j];
+    }
+    print FOUT "</td>";
+  }
+# print 13 to $MAXINDEX rowspan=2
+  for ( my $j = 13 ; $j <= $MAXINDEX; $j++ ){
+    print FOUT "<td rowspan=2>";
+    if (defined $array[$i][$j] && $array[$i][$j] ne '') {
+        print FOUT $array[$i][$j];
+    }
+    print FOUT "</td>";
+  }
+  print FOUT "</tr>";
+  # Print 2nd line
+  print FOUT "<tr>";
+  # print 9 to 12 desc2 to window2 in a specific row 
+  for ( my $j = 9 ; $j <= 12; $j++ ){
+    print FOUT "<td>";
+    if (defined $array[$i][$j] && $array[$i][$j] ne '') {
+        print FOUT $array[$i][$j];
+    }
+    print FOUT "</td>";
+  }
+print FOUT "</tr>";
+}
+sub printSTD {
+  print FOUT "<tr>";
+  # print 0 to 8 and 13 to $MAXINDEX
+  my $i = $_[0];
+  for ( my $j = 0 ; $j <= $MAXINDEX; $j++ ){
+    print FOUT "<td>";
+    if (defined $array[$i][$j] && $array[$i][$j] ne '') {
+        print FOUT $array[$i][$j];
+    }
+    print FOUT "</td>";
+    if ( $j == 8) {
+      $j = 12; #jump to 13
+    }
+  }
+  print FOUT "</tr>";
+}
 print "Trying to convert sec rules config files (.sec) to an HTML output\n";
 # check if a file to convert is provided
 if ($ARGC == 0){ # no filename provided
@@ -136,20 +192,21 @@ th {
 <table>';
 #print table header
 print FOUT "<thead><tr>";
+# print 0 to 8 and 13 to $MAXINDEX
 for ( my $j = 0 ; $j <= $MAXINDEX; $j++ ){
   print FOUT "<th>"; print FOUT $array[0][$j]; print FOUT "</th>";
+  if ( $j == 8) {
+    $j = 12 #jump to 13
+  }
 }
 print FOUT "</tr></thead>";
 #print table body (data)
 for ( my $i = 1 ; $i <= $id ; $i++ ){
-  print FOUT "\n";
   print FOUT "<tr>";
-  for ( my $j = 0 ; $j <= $MAXINDEX; $j++ ){
-    print FOUT "<td>";
-    if (defined $array[$i][$j] && $array[$i][$j] ne '') {
-    print FOUT $array[$i][$j];
-    }
-    print FOUT "</td>";
+  if ( $array[$i][3] eq "SingleWith2Thresholds\n"){
+    printSW2T($i);
+  } else {
+    printSTD($i);#print 1 row
   }
   print FOUT "</tr>";
 }
