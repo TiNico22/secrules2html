@@ -7,9 +7,11 @@
 # Usage		: perl secrules2html.mini.pl FILENAME
  
 use feature ':5.10';
+use warnings;
 
 my $ARGC = scalar(@ARGV);
 my $MAXSECFILESIZE=1048576; ## 1Mb
+our $MAXINDEX = 13;
 my @array;
 $array[0][0]="ID";
 $array[0][1]="Line";
@@ -39,12 +41,12 @@ sub usage_display {
 
 # replace "key=value" by "value" only 
 sub valueonly {
-  $valueonly = $_[0] =~ s/.*\=(.*)/\1/g;
+  $valueonly = $_[0] =~ s/.*\=(.*)/$1/g;
   return $valueonly;
 }
 # replace "rem=Title:value" by "value" only 
 sub titlevalueonly {
-  $titlevalueonly = $_[0] =~ s/.*\=Title:(.*)/\1/g;
+  $titlevalueonly = $_[0] =~ s/.*\=Title:(.*)/$1/g;
   return $titlevalueonly;
 }
 
@@ -115,14 +117,39 @@ while (<$fh_in>) {
     $array[$id][3]="End of File";
   }
 }
-print FOUT "<html><head><title>secrules2hml</title></head>
-<body><h1>Extracted rules from $ARGV[0]</h1>\
-<table border=1>";
-for ( my $i = 0 ; $i <= $id ; $i++ ){
+print FOUT '<html><head><title>secrules2hml</title>
+<style media="screen" type="text/css">
+table {
+    border-collapse: collapse;
+}
+table, td, th {
+    border: 1px solid darkblue;
+    padding: 2px
+}
+th {
+    background-color: grey;
+    color: white;\
+}
+</style>
+</head>
+<body><h1>Extracted rules from '.$ARGV[0].'</h1>
+<table>';
+#print table header
+print FOUT "<thead><tr>";
+for ( my $j = 0 ; $j <= $MAXINDEX; $j++ ){
+  print FOUT "<th>"; print FOUT $array[0][$j]; print FOUT "</th>";
+}
+print FOUT "</tr></thead>";
+#print table body (data)
+for ( my $i = 1 ; $i <= $id ; $i++ ){
   print FOUT "\n";
   print FOUT "<tr>";
-  for ( my $j = 0 ; $j <= 13; $j++ ){
-    print FOUT "<td>"; print FOUT $array[$i][$j]; print FOUT "</td>";
+  for ( my $j = 0 ; $j <= $MAXINDEX; $j++ ){
+    print FOUT "<td>";
+    if (defined $array[$i][$j] && $array[$i][$j] ne '') {
+    print FOUT $array[$i][$j];
+    }
+    print FOUT "</td>";
   }
   print FOUT "</tr>";
 }
