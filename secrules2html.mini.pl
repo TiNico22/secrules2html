@@ -28,21 +28,21 @@ our $Window2="window2=";
 our $Time="time=";
 # init array
 my @array;
-$array[0][0]="ID";
+$array[0][0]="Id";
 $array[0][1]="Line";
 $array[0][2]="Title";
 $array[0][3]="Type";
 $array[0][4]="Pattern";
 $array[0][5]="Desc";
 $array[0][6]="Action";
-$array[0][7]="Thresh";
-$array[0][8]="Window";
+$array[0][7]="Thr.";
+$array[0][8]="Win(s)";
 $array[0][9]="Desc2";
 $array[0][10]="Action2";
 $array[0][11]="Thresh2";
-$array[0][12]="Window2";
+$array[0][12]="Win2(s)";
 $array[0][13]="Time";
-$array[0][14]="Disable";
+$array[0][14]="Dis.";
 
 # Usage
 sub usage_display {
@@ -68,8 +68,9 @@ sub titlevalueonly {
 # HTML output for Single With 2 Thresh
 sub printSW2T {
   my $i = $_[0];
+  my $disable=$array[$i][14];
   # Print 1st line
-  if ( defined $array[$i][14] && $array[$i][14] == 1 ){
+  if ( defined $disable && $disable == 1 ){
     print FOUT "<tr bgcolor=$BG_DISABLE>";
   } else {
     print FOUT "<tr>";
@@ -78,7 +79,11 @@ sub printSW2T {
   for ( my $j = 0 ; $j <= 4; $j++ ){
     print FOUT "<td rowspan=2>";
     if (defined $array[$i][$j] && $array[$i][$j] ne '') {
+      if ( $j == 3 ){
+        print FOUT "Single W2T"
+      } else {
         print FOUT $array[$i][$j];
+      }
     }
     print FOUT "</td>";
   }
@@ -86,7 +91,13 @@ sub printSW2T {
   for ( my $j = 5 ; $j <= 8; $j++ ){
     print FOUT "<td>";
     if (defined $array[$i][$j] && $array[$i][$j] ne '') {
+      if ( $j == 6 ){ #replace \ at EOL by \<br> for html layout
+        my $htmltxt = $array[$i][$j];
+        $htmltxt =~ s/\\/\<br\>/g;
+        print FOUT $htmltxt;
+      } else {
         print FOUT $array[$i][$j];
+      }
     }
     print FOUT "</td>";
   }
@@ -100,12 +111,22 @@ sub printSW2T {
   }
   print FOUT "</tr>";
   # Print 2nd line
-  print FOUT "<tr>";
+  if ( defined $disable && $disable == 1 ){
+    print FOUT "<tr bgcolor=$BG_DISABLE>";
+  } else {
+    print FOUT "<tr>";
+  }
   # print 9 to 12 desc2 to window2 in a specific row 
   for ( my $j = 9 ; $j <= 12; $j++ ){
     print FOUT "<td>";
     if (defined $array[$i][$j] && $array[$i][$j] ne '') {
+      if ( $j == 10 ){ #replace \ at EOL by \<br> for html layout
+        my $htmltxt = $array[$i][$j];
+        $htmltxt =~ s/\\/\<br\>/g;
+        print FOUT $htmltxt;
+      } else {
         print FOUT $array[$i][$j];
+      }
     }
     print FOUT "</td>";
   }
@@ -125,7 +146,15 @@ sub printSTD {
   for ( my $j = 0 ; $j <= $MAXINDEX; $j++ ){
     print FOUT "<td>";
     if (defined $array[$i][$j] && $array[$i][$j] ne '') {
+      if ( $j == 3 && $array[$i][$j] eq "SingleWithThreshold\n" ) {
+        print FOUT "Single WT"
+      } elsif ( $j == 6 ){ #replace \ at EOL by \<br> for html layout
+        my $htmltxt = $array[$i][$j];
+        $htmltxt  =~ s/\\/\<br\>/g;
+        print FOUT $htmltxt;
+      } else {
         print FOUT $array[$i][$j];
+      }
     }
     print FOUT "</td>";
     if ( $j == 8) {
@@ -188,30 +217,32 @@ while (<$fh_in>) {
     } elsif ( $tmpLine =~ /$Prefix$Desc/ ){
         valueonly($tmpLine);
         $array[$id-1][5]=$tmpLine;
-    } elsif ( $tmpLine =~ /$Action/ ){
+    } elsif ( $tmpLine =~ /$Prefix$Action/ ){
         valueonly($tmpLine);
         $array[$id-1][6]=$tmpLine;
-        while ( $array[$id-1][6] =~ /\\$/ ) {
+        while ( $array[$id-1][6] =~ /\\$/ ) { # multiligne action=
 	  $tmpLine=<$fh_in>;
+          $tmpLine=~ s/^#(.*)/$1/;
           $array[$id-1][6].=$tmpLine;
         }
-    } elsif ( $tmpLine =~ /$Thresh/ ){
+    } elsif ( $tmpLine =~ /$Prefix$Thresh/ ){
         valueonly($tmpLine);
         $array[$id-1][7]=$tmpLine;
-    } elsif ( $tmpLine =~ /$Window/ ){
+    } elsif ( $tmpLine =~ /$Prefix$Window/ ){
         valueonly($tmpLine);
         $array[$id-1][8]=$tmpLine;
-    } elsif ( $tmpLine =~ /$Desc2/ ){
+    } elsif ( $tmpLine =~ /$Prefix$Desc2/ ){
         valueonly($tmpLine);
         $array[$id-1][9]=$tmpLine;
-    } elsif ( $tmpLine =~ /$Action2/ ){
+    } elsif ( $tmpLine =~ /$Prefix$Action2/ ){
         valueonly($tmpLine);
         $array[$id-1][10]=$tmpLine;
-        while ( $array[$id-1][10] =~ /\\$/ ) {
+        while ( $array[$id-1][10] =~ /\\$/ ) { # multiligne action=
 	  $tmpLine=<$fh_in>;
+          $tmpLine=~ s/^#(.*)/$1/;
           $array[$id-1][10].=$tmpLine;
         }
-    } elsif ( $tmpLine =~ /$Thresh2/ ){
+    } elsif ( $tmpLine =~ /$Prefix$Thresh2/ ){
         valueonly($tmpLine);
         $array[$id-1][11]=$tmpLine;
     } elsif ( $tmpLine =~ /$Window2/ ){
@@ -235,8 +266,8 @@ table {
     border-collapse: collapse;
 }
 table, td, th {
-    border: 1px solid black;
-    padding: 5px
+    border: 1px solid grey;
+    padding: 4px
 }
 th {
     background-color: grey;
@@ -264,7 +295,6 @@ for ( my $i = 1 ; $i <= $id ; $i++ ){
   } else {
     printSTD($i);#print 1 row
   }
-  print FOUT "</tr>";
 }
 print FOUT "</table>";
 $datestring = localtime();
