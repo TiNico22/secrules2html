@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/perl -w
 # use it under GPLv2
 # TiNico22
 # Generate an HTML table with sec rules key
@@ -11,7 +11,21 @@ use warnings;
 
 my $ARGC = scalar(@ARGV);
 my $MAXSECFILESIZE=1048576; ## 1Mb
-our $MAXINDEX = 13;
+our $MAXINDEX = 14; ## number of index in the array
+# init search pattern
+our $Title="rem=Title:";
+our $Type="type=";
+our $Pattern="pattern=";
+our $Desc="desc=";
+our $Action="action=";
+our $Thresh="thresh=";
+our $Window="window=";
+our $Desc2="desc2=";
+our $Action2="action2=";
+our $Thresh2="thresh2=";
+our $Window2="window2=";
+our $Time="time=";
+# init array
 my @array;
 $array[0][0]="ID";
 $array[0][1]="Line";
@@ -26,13 +40,13 @@ $array[0][9]="Desc2";
 $array[0][10]="Action2";
 $array[0][11]="Thresh2";
 $array[0][12]="Window2";
-$array[0][13]="Calendar";
+$array[0][13]="Time";
+$array[0][14]="Disable";
 
 # Usage
 sub usage_display {
   print "USAGE\
- perl secrules2html.mini.pl SECRULESFILE [OUTPUTNAME]\
-\
+ perl secrules2html.mini.pl SECRULESFILE [OUTPUTNAME]\n\
  SECRULESFILE	: the file with sec rules such as myrules.sec\
  OUTPUTNAME	: Optional, default value is index.html\
 
@@ -41,19 +55,25 @@ sub usage_display {
 
 # replace "key=value" by "value" only 
 sub valueonly {
-  $valueonly = $_[0] =~ s/.*\=(.*)/$1/g;
+  my $valueonly = $_[0] =~ s/.*\=(.*)/$1/g;
   return $valueonly;
 }
 # replace "rem=Title:value" by "value" only 
 sub titlevalueonly {
-  $titlevalueonly = $_[0] =~ s/.*\=Title:(.*)/$1/g;
+  my $titlevalueonly = $_[0] =~ s/.*\=Title:(.*)/$1/g;
   return $titlevalueonly;
 }
+
+# HTML output for Single With 2 Thresh
 sub printSW2T {
-# Print 1st line
-print FOUT "<tr>";
-# print 0 to 4 rowspan=2
   my $i = $_[0];
+  # Print 1st line
+  if ( defined $array[$i][14] && $array[$i][14] == 1 ){
+    print FOUT "<tr bgcolor=silver>";
+  } else {
+    print FOUT "<tr>";
+  }
+  # print 0 to 4 rowspan=2
   for ( my $j = 0 ; $j <= 4; $j++ ){
     print FOUT "<td rowspan=2>";
     if (defined $array[$i][$j] && $array[$i][$j] ne '') {
@@ -90,10 +110,17 @@ print FOUT "<tr>";
   }
 print FOUT "</tr>";
 }
+
+# output for line other than Single With 2 Thresh
 sub printSTD {
-  print FOUT "<tr>";
-  # print 0 to 8 and 13 to $MAXINDEX
   my $i = $_[0];
+  # Print 1st line
+  if ( defined $array[$i][14] && $array[$i][14] == 1 ){
+    print FOUT "<tr bgcolor=silver>";
+  } else {
+    print FOUT "<tr>";
+  }
+  # print 0 to 8 and 13 to $MAXINDEX
   for ( my $j = 0 ; $j <= $MAXINDEX; $j++ ){
     print FOUT "<td>";
     if (defined $array[$i][$j] && $array[$i][$j] ne '') {
@@ -106,6 +133,9 @@ sub printSTD {
   }
   print FOUT "</tr>";
 }
+##################################################
+## 		main 				##
+##################################################
 print "Trying to convert sec rules config files (.sec) to an HTML output\n";
 # check if a file to convert is provided
 if ($ARGC == 0){ # no filename provided
@@ -125,62 +155,79 @@ if ( $filesize_in > $MAXSECFILESIZE ){
     say "$filesize_in file size in byte, max file size is $MAXSECFILESIZE";
     die "Sec rules file is too big";
 }
-
+##################################################
+## parse the file for finding rules		##
+##################################################
 my $id=1;
+my $Prefix="^";
 while (<$fh_in>) {
-  if (/^type=/ .. /\n\n/) {
+# search for a block starting by type= and finishing by a blank line
+  if (/$Type/ .. /\n\n/) {
     $array[$id][1]=$.;
     my $tmpLine=$_;
-    if ( $tmpLine =~ /^type=/ ){
+    if ( $tmpLine =~ /^$Type/ ){ # active line
       valueonly($tmpLine);
+      $Prefix="^";
       $array[$id][3]=$tmpLine;
       $array[$id][0]=$id;
       $id++;
-    } elsif ( $tmpLine =~ /^rem=Title:/ ){
+    } elsif ( $tmpLine =~ /^# ?$Type/ ) {
+        valueonly($tmpLine);
+        $Prefix="^# ?";
+        $array[$id][3]=$tmpLine;
+        $array[$id][0]=$id;
+        $array[$id][14]=1;
+        $id++;
+    } elsif ( $tmpLine =~ /$Prefix$Title/ ){
         titlevalueonly($tmpLine);
         $array[$id-1][2]=$tmpLine;
-    } elsif ( $tmpLine =~ /^pattern=/ ){
+    } elsif ( $tmpLine =~ /$Prefix$Pattern/ ){
         valueonly($tmpLine);
         $array[$id-1][4]=$tmpLine;
-    } elsif ( $tmpLine =~ /^desc=/ ){
+    } elsif ( $tmpLine =~ /$Prefix$Desc/ ){
         valueonly($tmpLine);
         $array[$id-1][5]=$tmpLine;
-    } elsif ( $tmpLine =~ /^action=/ ){
+    } elsif ( $tmpLine =~ /$Action/ ){
         valueonly($tmpLine);
         $array[$id-1][6]=$tmpLine;
-    } elsif ( $tmpLine =~ /^thresh=/ ){
+    } elsif ( $tmpLine =~ /$Thresh/ ){
         valueonly($tmpLine);
         $array[$id-1][7]=$tmpLine;
-    } elsif ( $tmpLine =~ /^window=/ ){
+    } elsif ( $tmpLine =~ /$Window/ ){
         valueonly($tmpLine);
         $array[$id-1][8]=$tmpLine;
-    } elsif ( $tmpLine =~ /^desc2=/ ){
+    } elsif ( $tmpLine =~ /$Desc2/ ){
         valueonly($tmpLine);
         $array[$id-1][9]=$tmpLine;
-    } elsif ( $tmpLine =~ /^action2=/ ){
+    } elsif ( $tmpLine =~ /$Action2/ ){
         valueonly($tmpLine);
         $array[$id-1][10]=$tmpLine;
-    } elsif ( $tmpLine =~ /^thresh2=/ ){
+    } elsif ( $tmpLine =~ /$Thresh2/ ){
         valueonly($tmpLine);
         $array[$id-1][11]=$tmpLine;
-    } elsif ( $tmpLine =~ /^window2=/ ){
+    } elsif ( $tmpLine =~ /$Window2/ ){
         valueonly($tmpLine);
         $array[$id-1][12]=$tmpLine;
-    } elsif ( $tmpLine =~ /^time=/ ){
+    } elsif ( $tmpLine =~ /$Time/ ){
         valueonly($tmpLine);
         $array[$id-1][13]=$tmpLine;
     }
-    $array[$id][3]="End of File";
   }
 }
+$id--;
+close ($fh_in);
+
+##################################################
+## generate the HML				##
+##################################################
 print FOUT '<html><head><title>secrules2hml</title>
 <style media="screen" type="text/css">
 table {
     border-collapse: collapse;
 }
 table, td, th {
-    border: 1px solid darkblue;
-    padding: 2px
+    border: 1px solid black;
+    padding: 5px
 }
 th {
     background-color: grey;
@@ -188,7 +235,7 @@ th {
 }
 </style>
 </head>
-<body><h1>Extracted rules from '.$ARGV[0].'</h1>
+<body bgcolor=#f5f5f5><h1>Extracted rules from '.$ARGV[0].'</h1>
 <table>';
 #print table header
 print FOUT "<thead><tr>";
@@ -215,4 +262,3 @@ $datestring = localtime();
 print FOUT "<p align=right>generated by $0 at $datestring</p></body></html>";
 
 close (FOUT);
-close ($fh_in);
