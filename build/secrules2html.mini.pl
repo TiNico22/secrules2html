@@ -11,7 +11,7 @@ use warnings;
 
 our $BG_DISABLE="silver"; ## background color for disabled rules
 my $ARGC = scalar(@ARGV);
-my $MAXSECFILESIZE=1048576; ## 1Mb
+our $MAXSECFILESIZE=1048576; ## 1Mb
 our $MAXINDEX = 14; ## number of index in the array
 # init search pattern
 our $Title="rem=Title:";
@@ -87,7 +87,7 @@ sub printSW2T {
     }
     print FOUT "</td>";
   }
-# print 5 to 8 desc1 ...
+  # print 5 to 8 desc1 ...
   for ( my $j = 5 ; $j <= 8; $j++ ){
     print FOUT "<td>";
     if (defined $array[$i][$j] && $array[$i][$j] ne '') {
@@ -101,7 +101,7 @@ sub printSW2T {
     }
     print FOUT "</td>";
   }
-# print 13 to $MAXINDEX rowspan=2
+  # print 13 to $MAXINDEX rowspan=2
   for ( my $j = 13 ; $j <= $MAXINDEX; $j++ ){
     print FOUT "<td rowspan=2>";
     if (defined $array[$i][$j] && $array[$i][$j] ne '') {
@@ -245,10 +245,10 @@ while (<$fh_in>) {
     } elsif ( $tmpLine =~ /$Prefix$Thresh2/ ){
         valueonly($tmpLine);
         $array[$id-1][11]=$tmpLine;
-    } elsif ( $tmpLine =~ /$Window2/ ){
+    } elsif ( $tmpLine =~ /$Prefix$Window2/ ){
         valueonly($tmpLine);
         $array[$id-1][12]=$tmpLine;
-    } elsif ( $tmpLine =~ /$Time/ ){
+    } elsif ( $tmpLine =~ /$PrefixTime/ ){
         valueonly($tmpLine);
         $array[$id-1][13]=$tmpLine;
     }
