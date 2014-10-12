@@ -9,6 +9,7 @@
 use feature ':5.10';
 use warnings;
 
+our $BG_DISABLE="silver"; ## background color for disabled rules
 my $ARGC = scalar(@ARGV);
 my $MAXSECFILESIZE=1048576; ## 1Mb
 our $MAXINDEX = 14; ## number of index in the array
@@ -69,7 +70,7 @@ sub printSW2T {
   my $i = $_[0];
   # Print 1st line
   if ( defined $array[$i][14] && $array[$i][14] == 1 ){
-    print FOUT "<tr bgcolor=silver>";
+    print FOUT "<tr bgcolor=$BG_DISABLE>";
   } else {
     print FOUT "<tr>";
   }
@@ -116,7 +117,7 @@ sub printSTD {
   my $i = $_[0];
   # Print 1st line
   if ( defined $array[$i][14] && $array[$i][14] == 1 ){
-    print FOUT "<tr bgcolor=silver>";
+    print FOUT "<tr bgcolor=$BG_DISABLE>";
   } else {
     print FOUT "<tr>";
   }
@@ -190,6 +191,10 @@ while (<$fh_in>) {
     } elsif ( $tmpLine =~ /$Action/ ){
         valueonly($tmpLine);
         $array[$id-1][6]=$tmpLine;
+        while ( $array[$id-1][6] =~ /\\$/ ) {
+	  $tmpLine=<$fh_in>;
+          $array[$id-1][6].=$tmpLine;
+        }
     } elsif ( $tmpLine =~ /$Thresh/ ){
         valueonly($tmpLine);
         $array[$id-1][7]=$tmpLine;
@@ -202,6 +207,10 @@ while (<$fh_in>) {
     } elsif ( $tmpLine =~ /$Action2/ ){
         valueonly($tmpLine);
         $array[$id-1][10]=$tmpLine;
+        while ( $array[$id-1][10] =~ /\\$/ ) {
+	  $tmpLine=<$fh_in>;
+          $array[$id-1][10].=$tmpLine;
+        }
     } elsif ( $tmpLine =~ /$Thresh2/ ){
         valueonly($tmpLine);
         $array[$id-1][11]=$tmpLine;
