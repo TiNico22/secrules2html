@@ -243,15 +243,15 @@ sub printSTD {
     for ( my $j = 0 ; $j <= $MAXINDEX; $j++ ){
     print FOUT "<td>";
     if (defined $array[$i][$j] && $array[$i][$j] ne '') {
-      if ( $j == 3 && $array[$i][$j] eq "SingleWithThreshold\n" ) {
+      if ( $j == 3 && lc ($array[$i][$j]) eq lc ("SingleWithThreshold\n") ) {
         print FOUT "Single WT";
-      } elsif ( $j == 3 && $array[$i][$j] eq "SingleWithScript\n" ) {
+      } elsif ( $j == 3 && lc ($array[$i][$j]) eq lc ("SingleWithScript\n") ) {
         print FOUT "Single Script";
-      } elsif ( $j == 3 && $array[$i][$j] eq "SingleWithSuppress\n" ) {
+      } elsif ( $j == 3 && lc ($array[$i][$j]) eq lc ("SingleWithSuppress\n") ) {
         print FOUT "Single Supp";
-      } elsif ( $j == 3 && $array[$i][$j] eq "PairWithWindow\n" ) {
+      } elsif ( $j == 3 && lc ($array[$i][$j]) eq lc ("PairWithWindow\n") ) {
         print FOUT "Pair Win";
-      } elsif ( $j == 3 && $array[$i][$j] eq "EventGroup\n" ) {
+      } elsif ( $j == 3 && lc ($array[$i][$j]) eq lc ("EventGroup\n") ) {
         print FOUT "Event Group";
       } elsif ( $j == 6 ){ #replace \ at EOL by \<br> for html layout
         my $htmltxt = $array[$i][$j];
@@ -288,7 +288,7 @@ sub htmltable {
   print FOUT "<tbody>";
   for ( my $i = 1 ; $i <= $id ; $i++ ){
     print FOUT "<tr>";
-    if ( $array[$i][3] eq "SingleWith2Thresholds\n"){
+    if ( lc ($array[$i][3]) eq lc ("SingleWith2Thresholds\n") ){
       printSW2T($i);
     } else {
       printSTD($i);#print 1 row
