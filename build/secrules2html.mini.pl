@@ -1,10 +1,12 @@
 #!/usr/bin/perl -w
-# use it under GPLv2
-# TiNico22
+# Use it under GPLv2 http://www.gnu.org/licenses/gpl-2.0.html
+# copyright TiNico22 
+# Latest version : https://github.com/TiNico22/secrules2html
+#
 # Generate an HTML table with sec rules key
-# Input         : sec rules file such as myrules.sec
-# Output        : index.html in the current directory
-# Usage         : perl secrules2html.mini.pl FILENAME
+# Input         : sec rules file (or directory) such as myrules.sec
+# Output        : index.html in the current directory or specified filename
+# Usage         : perl secrules2html.mini.pl <FILENAME|DIRNAME> [OUTPUTFILE]
 
 use feature ':5.10';
 use warnings;
@@ -50,13 +52,14 @@ sub setarray{
   $array[0][15]="File";
   return @array;
 }
-#Usage
+#Print usage on tty
 sub usage_display {
   print "usage: ./secrules2html.mini.pl <FILENAME|DIRNAME> [<OUTPUTNAME>]\n
  FILENAME	: the file with sec rules such as myrules.sec\
  DIRNAME	: the directory with sec rules files\
  OUTPUTNAME     : Optional, default value is index.html\n
- If you want to give Title to your rules use rem=Title:MyTitle in your sec rules\n\n";
+advice:  
+ If you want to give Title to your rules use rem=Title:<MyTitle>\n\n";
 }
       
 # replace "key=value" by "value" only 
