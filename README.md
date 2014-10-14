@@ -3,10 +3,10 @@ Convert SEC (simple event correlator) rules files into a web page
 
 ##secrules2html.mini.pl
 ###Synopsys
-Simple converter, convert 1 secrulesfile to 1 html output in a table
+Simple converter, convert a secrules file or secrules files from a directory to one html output file in a table layout
 
 ###Usage
-*$ perl secrules2html.mini.pl myrules.sec [outputfilename]*
+*$ perl secrules2html.mini.pl \<filename|dirname\> [\<outputfilename\>]*
 
 If no outputfilename is given, writing result to index.html in the current directory
 
