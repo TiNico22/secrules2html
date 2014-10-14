@@ -1,5 +1,8 @@
 Revision history
 
+0.1.2
+add directory feature to parse a directory for generating one html with all secrules
+
 0.1.1
 bugfix in multiline
 (new) present inactive rules
