@@ -244,7 +244,15 @@ sub printSTD {
     print FOUT "<td>";
     if (defined $array[$i][$j] && $array[$i][$j] ne '') {
       if ( $j == 3 && $array[$i][$j] eq "SingleWithThreshold\n" ) {
-        print FOUT "Single WT"
+        print FOUT "Single WT";
+      } elsif ( $j == 3 && $array[$i][$j] eq "SingleWithScript\n" ) {
+        print FOUT "Single Script";
+      } elsif ( $j == 3 && $array[$i][$j] eq "SingleWithSuppress\n" ) {
+        print FOUT "Single Supp";
+      } elsif ( $j == 3 && $array[$i][$j] eq "PairWithWindow\n" ) {
+        print FOUT "Pair Win";
+      } elsif ( $j == 3 && $array[$i][$j] eq "EventGroup\n" ) {
+        print FOUT "Event Group";
       } elsif ( $j == 6 ){ #replace \ at EOL by \<br> for html layout
         my $htmltxt = $array[$i][$j];
         $htmltxt  =~ s/\\/\<br\>/g;
