@@ -25,31 +25,51 @@ our $Desc="desc=";
 our $Action="action=";
 our $Thresh="thresh=";
 our $Window="window=";
+our $Pattern2="pattern2=";
 our $Desc2="desc2=";
 our $Action2="action2=";
 our $Thresh2="thresh2=";
 our $Window2="window2=";
 our $Time="time=";
+# Columns ID
+our $IdID=0;
+our $LineID=1;
+our $TitleID=2;
+our $TypeID=3;
+our $PatternID=4;
+our $DescID=5;
+our $ActionID=6;
+our $ThreshID=7;
+our $WindowID=8;
+our $Pattern2ID=20;
+our $Desc2ID=9;
+our $Action2ID=10;
+our $Thresh2ID=11;
+our $Window2ID=12;
+our $TimeID=13;
+our $DisableID=14;
+our $FileID=15;
 # init array
 sub setarray{
   undef @array; 
   my @array;
-  $array[0][0]="Id";
-  $array[0][1]="Line";
-  $array[0][2]="Title";
-  $array[0][3]="Type";
-  $array[0][4]="Pattern";
-  $array[0][5]="Desc";
-  $array[0][6]="Action";
-  $array[0][7]="Thr.";
-  $array[0][8]="Win(s)";
-  $array[0][9]="Desc2";
-  $array[0][10]="Action2";
-  $array[0][11]="Thresh2";
-  $array[0][12]="Win2(s)";
-  $array[0][13]="Time";
-  $array[0][14]="Dis.";
-  $array[0][15]="File";
+  $array[0][$IdID]="Id";
+  $array[0][$LineID]="Line";
+  $array[0][$TitleID]="Title";
+  $array[0][$TypeID]="Type";
+  $array[0][$PatternID]="Pattern";
+  $array[0][$DescID]="Desc";
+  $array[0][$ActionID]="Action";
+  $array[0][$ThreshID]="Thr.";
+  $array[0][$WindowID]="Win(s)";
+  $array[0][$Pattern2ID]="Pattern2";
+  $array[0][$Desc2ID]="Desc2";
+  $array[0][$Action2ID]="Action2";
+  $array[0][$Thresh2ID]="Thresh2";
+  $array[0][$Window2ID]="Win2(s)";
+  $array[0][$TimeID]="Time";
+  $array[0][$DisableID]="Dis.";
+  $array[0][$FileID]="File";
   return @array;
 }
 #Print usage on tty
@@ -95,65 +115,65 @@ sub parseunitaryfile {
   while (<$fh_in>) {
 # search for a block starting by type= and finishing by a blank line
     if (/$Type/ .. /\n\n/) {
-      $array[$id][1]=$.; # starting rules line
-      $array[$id][15]=$filename; # filename
+      $array[$id][$LineID]=$.; # starting rules line
+      $array[$id][$FileID]=$filename; # filename
       my $tmpLine=$_;
       if ( $tmpLine =~ /^$Type/ ){ # active line
         valueonly($tmpLine);
         $Prefix="^";
-        $array[$id][3]=$tmpLine;
-        $array[$id][0]=$id;
+        $array[$id][$TypeID]=$tmpLine;
+        $array[$id][$IdID]=$id;
         $id++;
       } elsif ( $tmpLine =~ /^# ?$Type/ ) {
           valueonly($tmpLine);
           $Prefix="^# ?";
-          $array[$id][3]=$tmpLine;
-          $array[$id][0]=$id;
-          $array[$id][14]=1;
+          $array[$id][$TypeID]=$tmpLine;
+          $array[$id][$IdID]=$id;
+          $array[$id][$DisableID]=1;
           $id++;
       } elsif ( $tmpLine =~ /$Prefix$Title/ ){
           titlevalueonly($tmpLine);
-          $array[$id-1][2]=$tmpLine;
+          $array[$id-1][$TitleID]=$tmpLine;
       } elsif ( $tmpLine =~ /$Prefix$Pattern/ ){
           valueonly($tmpLine);
-          $array[$id-1][4]=$tmpLine;
+          $array[$id-1][$PatternID]=$tmpLine;
       } elsif ( $tmpLine =~ /$Prefix$Desc/ ){
           valueonly($tmpLine);
-          $array[$id-1][5]=$tmpLine;
+          $array[$id-1][$DescID]=$tmpLine;
       } elsif ( $tmpLine =~ /$Prefix$Action/ ){
           valueonly($tmpLine);
-          $array[$id-1][6]=$tmpLine;
-          while ( $array[$id-1][6] =~ /\\$/ ) { # multiligne action=
+          $array[$id-1][$ActionID]=$tmpLine;
+          while ( $array[$id-1][$ActionID] =~ /\\$/ ) { # multiligne action=
             $tmpLine=<$fh_in>;
             $tmpLine=~ s/^#(.*)/$1/;
-            $array[$id-1][6].=$tmpLine;
+            $array[$id-1][$ActionID].=$tmpLine;
           }
       } elsif ( $tmpLine =~ /$Prefix$Thresh/ ){
           valueonly($tmpLine);
-          $array[$id-1][7]=$tmpLine;
+          $array[$id-1][$ThreshID]=$tmpLine;
       } elsif ( $tmpLine =~ /$Prefix$Window/ ){
           valueonly($tmpLine);
-          $array[$id-1][8]=$tmpLine;
+          $array[$id-1][$WindowID]=$tmpLine;
       } elsif ( $tmpLine =~ /$Prefix$Desc2/ ){
           valueonly($tmpLine);
-          $array[$id-1][9]=$tmpLine;
+          $array[$id-1][$Desc2ID]=$tmpLine;
       } elsif ( $tmpLine =~ /$Prefix$Action2/ ){
           valueonly($tmpLine);
-          $array[$id-1][10]=$tmpLine;
-          while ( $array[$id-1][10] =~ /\\$/ ) { # multiligne action=
+          $array[$id-1][$Action2ID]=$tmpLine;
+          while ( $array[$id-1][$Action2ID] =~ /\\$/ ) { # multiligne action=
             $tmpLine=<$fh_in>;
             $tmpLine=~ s/^#(.*)/$1/;
-            $array[$id-1][10].=$tmpLine;
+            $array[$id-1][$Action2ID].=$tmpLine;
           }
       } elsif ( $tmpLine =~ /$Prefix$Thresh2/ ){
           valueonly($tmpLine);
-          $array[$id-1][11]=$tmpLine;
+          $array[$id-1][$Thresh2ID]=$tmpLine;
       } elsif ( $tmpLine =~ /$Prefix$Window2/ ){
           valueonly($tmpLine);
-          $array[$id-1][12]=$tmpLine;
+          $array[$id-1][$Window2ID]=$tmpLine;
       } elsif ( $tmpLine =~ /$Prefix$Time/ ){
           valueonly($tmpLine);
-          $array[$id-1][13]=$tmpLine;
+          $array[$id-1][$TimeID]=$tmpLine;
       }
     }
   }
@@ -162,10 +182,10 @@ sub parseunitaryfile {
   return $id;
 }
 
-# HTML output for Single With 2 Thresh
-sub printSW2T{
+# HTML output for  Pair and Pair with window
+sub printPAIR{
   my $i = $_[0];
-  my $disable=$array[$i][14];
+  my $disable=$array[$i][$DisableID];
   # Print 1st line
   if ( defined $disable && $disable == 1 ){
     print FOUT "<tr bgcolor=$BG_DISABLE>";
@@ -176,8 +196,8 @@ sub printSW2T{
   for ( my $j = 0 ; $j <= 4; $j++ ){
     print FOUT "<td rowspan=2>";
     if (defined $array[$i][$j] && $array[$i][$j] ne '') {
-      if ( $j == 3 ){
-        print FOUT "Single W2T"
+      if ( $j == $TypeID ){
+        print FOUT "Pair| Pair WT"; ###### TODO
       } else {
         print FOUT $array[$i][$j];
       }
@@ -188,7 +208,7 @@ sub printSW2T{
   for ( my $j = 5 ; $j <= 8; $j++ ){
     print FOUT "<td>";
     if (defined $array[$i][$j] && $array[$i][$j] ne '') {
-      if ( $j == 6 ){ #replace \ at EOL by \<br> for html layout
+      if ( $j == $ActionID ){ #replace \ at EOL by \<br> for html layout
         my $htmltxt = $array[$i][$j];
         $htmltxt =~ s/\\/\<br\>/g;
         print FOUT $htmltxt;
@@ -217,7 +237,75 @@ sub printSW2T{
    for ( my $j = 9 ; $j <= 12; $j++ ){
     print FOUT "<td>";
     if (defined $array[$i][$j] && $array[$i][$j] ne '') {
-      if ( $j == 10 ){ #replace \ at EOL by \<br> for html layout
+      if ( $j == $Action2ID ){ #replace \ at EOL by \<br> for html layout
+        my $htmltxt = $array[$i][$j];
+        $htmltxt =~ s/\\/\<br\>/g;
+        print FOUT $htmltxt;
+      } else {
+        print FOUT $array[$i][$j];
+      }
+    }
+    print FOUT "</td>";
+  }
+  print FOUT "</tr>";
+}
+
+# HTML output for Single With 2 Thresh
+sub printSW2T{
+  my $i = $_[0];
+  my $disable=$array[$i][$DisableID];
+  # Print 1st line
+  if ( defined $disable && $disable == 1 ){
+    print FOUT "<tr bgcolor=$BG_DISABLE>";
+  } else {
+    print FOUT "<tr>";
+  }
+  # print 0 to 4 rowspan=2
+  for ( my $j = 0 ; $j <= 4; $j++ ){
+    print FOUT "<td rowspan=2>";
+    if (defined $array[$i][$j] && $array[$i][$j] ne '') {
+      if ( $j == $TypeID ){
+        print FOUT "Single W2T"
+      } else {
+        print FOUT $array[$i][$j];
+      }
+    }
+    print FOUT "</td>";
+  }
+  # print 5 to 8 desc1 ...
+  for ( my $j = 5 ; $j <= 8; $j++ ){
+    print FOUT "<td>";
+    if (defined $array[$i][$j] && $array[$i][$j] ne '') {
+      if ( $j == $ActionID ){ #replace \ at EOL by \<br> for html layout
+        my $htmltxt = $array[$i][$j];
+        $htmltxt =~ s/\\/\<br\>/g;
+        print FOUT $htmltxt;
+      } else {
+        print FOUT $array[$i][$j];
+      }
+    }
+    print FOUT "</td>";
+  }
+  # print 13 to $MAXINDEX rowspan=2
+  for ( my $j = 13 ; $j <= $MAXINDEX; $j++ ){
+    print FOUT "<td rowspan=2>";
+    if (defined $array[$i][$j] && $array[$i][$j] ne '') {
+        print FOUT $array[$i][$j];
+    }
+    print FOUT "</td>";
+  }
+  print FOUT "</tr>";
+  # Print 2nd line
+  if ( defined $disable && $disable == 1 ){
+    print FOUT "<tr bgcolor=$BG_DISABLE>";
+  } else {
+    print FOUT "<tr>";
+  }
+  # print 9 to 12 desc2 to window2 in a specific row 
+   for ( my $j = 9 ; $j <= 12; $j++ ){
+    print FOUT "<td>";
+    if (defined $array[$i][$j] && $array[$i][$j] ne '') {
+      if ( $j == $Action2ID ){ #replace \ at EOL by \<br> for html layout
         my $htmltxt = $array[$i][$j];
         $htmltxt =~ s/\\/\<br\>/g;
         print FOUT $htmltxt;
@@ -234,7 +322,7 @@ sub printSW2T{
 sub printSTD {
   my $i = $_[0];
   # Print 1st line
-  if ( defined $array[$i][14] && $array[$i][14] == 1 ){
+  if ( defined $array[$i][$DisableID] && $array[$i][$DisableID] == 1 ){
 	  print FOUT "<tr bgcolor=$BG_DISABLE>";
   } else {
     print FOUT "<tr>";
@@ -243,17 +331,17 @@ sub printSTD {
     for ( my $j = 0 ; $j <= $MAXINDEX; $j++ ){
     print FOUT "<td>";
     if (defined $array[$i][$j] && $array[$i][$j] ne '') {
-      if ( $j == 3 && lc ($array[$i][$j]) eq lc ("SingleWithThreshold\n") ) {
+      if ( $j == $TypeID && lc ($array[$i][$j]) eq lc ("SingleWithThreshold\n") ) {
         print FOUT "Single WT";
-      } elsif ( $j == 3 && lc ($array[$i][$j]) eq lc ("SingleWithScript\n") ) {
+      } elsif ( $j == $TypeID && lc ($array[$i][$j]) eq lc ("SingleWithScript\n") ) {
         print FOUT "Single Script";
-      } elsif ( $j == 3 && lc ($array[$i][$j]) eq lc ("SingleWithSuppress\n") ) {
+      } elsif ( $j == $TypeID && lc ($array[$i][$j]) eq lc ("SingleWithSuppress\n") ) {
         print FOUT "Single Supp";
-      } elsif ( $j == 3 && lc ($array[$i][$j]) eq lc ("PairWithWindow\n") ) {
+      } elsif ( $j == $TypeID && lc ($array[$i][$j]) eq lc ("PairWithWindow\n") ) {
         print FOUT "Pair Win";
-      } elsif ( $j == 3 && lc ($array[$i][$j]) eq lc ("EventGroup\n") ) {
+      } elsif ( $j == $TypeID && lc ($array[$i][$j]) eq lc ("EventGroup\n") ) {
         print FOUT "Event Group";
-      } elsif ( $j == 6 ){ #replace \ at EOL by \<br> for html layout
+      } elsif ( $j == $ActionID ){ #replace \ at EOL by \<br> for html layout
         my $htmltxt = $array[$i][$j];
         $htmltxt  =~ s/\\/\<br\>/g;
         print FOUT $htmltxt;
@@ -288,7 +376,7 @@ sub htmltable {
   print FOUT "<tbody>";
   for ( my $i = 1 ; $i <= $id ; $i++ ){
     print FOUT "<tr>";
-    if ( lc ($array[$i][3]) eq lc ("SingleWith2Thresholds\n") ){
+    if ( lc ($array[$i][$TypeID]) eq lc ("SingleWith2Thresholds\n") ){
       printSW2T($i);
     } else {
       printSTD($i);#print 1 row
