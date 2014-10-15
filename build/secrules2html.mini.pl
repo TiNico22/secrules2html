@@ -20,12 +20,14 @@ our $MAXINDEX = 15; ## number of index in the array
 # init search pattern
 our $Title="rem=Title:";
 our $Type="type=";
+our $Ptype="ptype=";
 our $Pattern="pattern=";
 our $Desc="desc=";
 our $Action="action=";
 our $Thresh="thresh=";
 our $Window="window=";
 our $Pattern2="pattern2=";
+our $Ptype2="type2=";
 our $Desc2="desc2=";
 our $Action2="action2=";
 our $Thresh2="thresh2=";
@@ -37,11 +39,13 @@ our $LineID=1;
 our $TitleID=2;
 our $TypeID=3;
 our $PatternID=4;
+our $PtypeID=19;
 our $DescID=5;
 our $ActionID=6;
 our $ThreshID=7;
 our $WindowID=8;
 our $Pattern2ID=20;
+our $Ptype2ID=21;
 our $Desc2ID=9;
 our $Action2ID=10;
 our $Thresh2ID=11;
@@ -57,12 +61,14 @@ sub setarray{
   $array[0][$LineID]="Line";
   $array[0][$TitleID]="Title";
   $array[0][$TypeID]="Type";
+  $array[0][$PtypeID]="Ptype";
   $array[0][$PatternID]="Pattern";
   $array[0][$DescID]="Desc";
   $array[0][$ActionID]="Action";
   $array[0][$ThreshID]="Thr.";
   $array[0][$WindowID]="Win(s)";
   $array[0][$Pattern2ID]="Pattern2";
+  $array[0][$Ptype2ID]="Ptype2";
   $array[0][$Desc2ID]="Desc2";
   $array[0][$Action2ID]="Action2";
   $array[0][$Thresh2ID]="Thresh2";
@@ -137,6 +143,10 @@ sub parseunitaryfile {
       } elsif ( $tmpLine =~ /$Prefix$Pattern/ ){
           valueonly($tmpLine);
           $array[$id-1][$PatternID]=$tmpLine;
+      } elsif ( $tmpLine =~ /$Prefix$Ptype/ ){
+          valueonly($tmpLine);
+          chomp($tmpLine);
+          $array[$id-1][$PtypeID]=$tmpLine;
       } elsif ( $tmpLine =~ /$Prefix$Desc/ ){
           valueonly($tmpLine);
           $array[$id-1][$DescID]=$tmpLine;
@@ -154,6 +164,12 @@ sub parseunitaryfile {
       } elsif ( $tmpLine =~ /$Prefix$Window/ ){
           valueonly($tmpLine);
           $array[$id-1][$WindowID]=$tmpLine;
+      } elsif ( $tmpLine =~ /$Prefix$Pattern2/ ){
+          valueonly($tmpLine);
+          $array[$id-1][$Pattern2ID]=$tmpLine;
+      } elsif ( $tmpLine =~ /$Prefix$Ptype2/ ){
+          valueonly($tmpLine);
+          $array[$id-1][$Ptype2ID]=$tmpLine;
       } elsif ( $tmpLine =~ /$Prefix$Desc2/ ){
           valueonly($tmpLine);
           $array[$id-1][$Desc2ID]=$tmpLine;
@@ -262,7 +278,11 @@ sub printSW2T{
   }
   # print 0 to 4 rowspan=2
   for ( my $j = 0 ; $j <= 4; $j++ ){
-    print FOUT "<td rowspan=2>";
+    if ( defined $array[$i][$j] && $j == $PatternID ) {
+      print FOUT "<td rowspan=2 title=\"$array[$i][$PtypeID]\">";
+    } else {
+      print FOUT "<td rowspan=2>";
+    }
     if (defined $array[$i][$j] && $array[$i][$j] ne '') {
       if ( $j == $TypeID ){
         print FOUT "Single W2T"
@@ -329,7 +349,11 @@ sub printSTD {
   }
   # print 0 to 8 and 13 to $MAXINDEX
     for ( my $j = 0 ; $j <= $MAXINDEX; $j++ ){
-    print FOUT "<td>";
+      if ( defined $array[$i][$j] && $j == $PatternID ) {
+        print FOUT "<td title=\"$array[$i][$PtypeID]\">";
+      } else {
+        print FOUT "<td>";
+      }
     if (defined $array[$i][$j] && $array[$i][$j] ne '') {
       if ( $j == $TypeID && lc ($array[$i][$j]) eq lc ("SingleWithThreshold\n") ) {
         print FOUT "Single WT";
