@@ -1,0 +1,174 @@
+###
+type=siNgle
+rem=Title:My case sensitive siNgle
+continue=takenext
+ptype=regexp
+pattern=ftpd\[(\d+)\]:
+context=ftp_$1
+desc=ftp session event for ristov2 pid $1
+action=add ftp_$1 $0; set ftp_$1 1800 \
+         (report ftp_$1 /bin/mail root@localhost) 
+
+####
+type=SingleWithScript
+ptype=RegExp
+rem=Title:My Single wtih script demo
+pattern=interface ([\d.]+) down
+script=/bin/ping -c 3 -q $1
+desc=Check if $1 responds to ping
+action=logonly Interface $1 reported down, but is pingable
+action2=pipe '%t: Interface $1 is down' /bin/mail root@localhost
+
+####
+type=SingleWithSuppress
+ptype=RegExp
+pattern=(\S+): [fF]ile system full
+desc=File system $1 full
+action=pipe '%t: %s' /bin/mail root@localhost
+window=900
+
+####
+type=Pair
+ptype=RegExp
+pattern=kernel: nfs: server (\S+) not responding, still trying
+desc=Server $1 is not responding
+action=pipe '%t: %s' /bin/mail root@localhost
+ptype2=SubStr
+pattern2=kernel: nfs: server $1 OK
+desc2=Server $1 is responding again
+action2=logonly
+window=3600 
+
+#### 
+type=PairWithWindow
+ptype=RegExp
+pattern=sshd\[\d+\]: Failed .+ for (\S+) from ([\d.]+) port \d+ ssh2
+desc=User $1 has been unable to log in from $2 over SSH during 1 minute
+action=pipe '%t: %s' /bin/mail root@localhost
+ptype2=RegExp
+pattern2=sshd\[\d+\]: Accepted .+ for $1 from $2 port \d+ ssh2
+desc2=SSH login successful for %1 from %2 after initial failure
+action2=logonly
+window=60 
+
+#type=PairWithWindow
+#ptype=RegExp
+#pattern=sshd\[\d+\]: Failed .+ for (\S+) from ([\d.]+) port \d+ ssh2
+#desc=User $1 has been unable to log in from $2 over SSH during 1 minute
+#action=pipe '%t: %s' /bin/mail root@localhost
+#ptype2=RegExp
+#pattern2=sshd\[\d+\]: Accepted .+ for $1 from $2 port \d+ ssh2
+#desc2=SSH login successful for %1 from %2 after initial failure
+#action2=logonly
+#window=60 
+
+####
+type=SingleWithThreshold
+ptype=RegExp
+pattern=sshd\[\d+\]: Failed .+ for (\S+) from [\d.]+ port \d+ ssh2
+desc=Three SSH login failures within 1m for user $1
+action=pipe '%t: %s' /bin/mail root@localhost
+window=60
+thresh=3 
+
+####
+type=SingleWith2Thresholds
+ptype=RegExp
+pattern=(\S+): %SYS-3-CPUHOG
+desc=Router $1 CPU overload
+action=pipe '%t: %s' /bin/mail root@localhost
+window=300
+thresh=2
+desc2=Router $1 CPU load has been normal for 1h
+action2=logonly
+window2=3600
+thresh2=0 
+
+####
+type=EventGroup3
+ptype=RegExp
+pattern=sshd\[\d+\]: Failed .+ for (?:invalid user )?\S+ from ([\d.]+) port \d+ ssh2
+thresh=2
+ptype2=RegExp
+pattern2=^([\d.]+) \S+ \S+ \[.+?\] ".+? HTTP\/[\d.]+" 4\d+
+thresh2=3
+ptype3=RegExp
+pattern3=kernel: iptables:.* SRC=([\d.]+)
+thresh3=5
+desc=Repeated probing from host $1
+action=pipe '%t: %s' /bin/mail root@localhost
+window=120 
+
+####
+type=EventGroup3
+ptype=regexp
+pattern=sshd\[\d+\]: Failed .+ for (\S+) from ([\d.]+) port \d+ ssh2
+varmap= user=1; ip=2
+count=alias OPER_$+{ip} LOGIN_FAILED_$+{user}_$+{ip}
+ptype2=regexp
+pattern2=sshd\[\d+\]: Accepted .+ for (\S+) from ([\d.]+) port \d+ ssh2
+varmap2= user=1; ip=2
+context2=LOGIN_FAILED_$+{user}_$+{ip}
+ptype3=regexp
+pattern3=kernel: iptables:.* SRC=([\d.]+)
+varmap3= ip=1
+desc=Client $+{ip} accessed a firewalled port and had difficulties with logging in
+action=pipe '%t: %s' /bin/mail root@localhost
+init=create OPER_$+{ip}
+slide=delete OPER_$+{ip}; reset 0
+end=delete OPER_$+{ip}
+window=120
+
+####
+type=Suppress
+rem=Title:1/2
+ptype=RegExp
+pattern=sshd\[\d+\]: Failed .+ for \S+ from ([\d.]+) port \d+ ssh2
+context=SUPPRESS_IP_$1
+
+type=SingleWithThreshold
+rem=Title:2/2
+ptype=RegExp
+pattern=sshd\[\d+\]: Failed .+ for (\S+) from ([\d.]+) port \d+ ssh2
+desc=Three SSH login failures within 1m for user $1 from $2
+action=pipe '%t: %s' /bin/mail root@localhost; \
+       create SUPPRESS_IP_$2 3600
+window=60
+thresh=3 
+
+####
+type=Calendar
+rem=Title:1/3
+time=0 2 25-31 3,12 6
+desc=Check if backup is done on last Saturday of Q1 and Q4
+action=event WAITING_FOR_BACKUP
+
+type=Calendar
+rem=Title:2/3
+time=0 2 24-30 6,9 6
+desc=Check if backup is done on last Saturday of Q2 and Q3
+action=event WAITING_FOR_BACKUP
+
+type=PairWithWindow
+rem=Title:3/3
+ptype=SubStr
+pattern=WAITING_FOR_BACKUP
+desc=Quarterly backup not completed on time!
+action=pipe '%t: %s' /bin/mail root@localhost
+ptype2=SubStr
+pattern2=BACKUP READY
+desc2=Quarterly backup successfully completed
+action2=none
+window=1800 
+
+####
+type=Jump
+ptype=RegExp
+pattern=sshd\[\d+\]:
+cfset=sshd-rules auth-rules 
+
+####
+type=Options
+joincfset=sshd-rules
+procallin=no 
+
