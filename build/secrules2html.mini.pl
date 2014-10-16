@@ -16,7 +16,7 @@ our $DIRNAME = $ARGV[0];
 our $ARGC = scalar(@ARGV);
 our @ARGUMENTS = @ARGV;
 our $MAXSECFILESIZE=1048576; ## 1Mb
-our $MAXINDEX = 15; ## number of index in the array
+our $MAXINDEX = 16; ## number of index in the array
 # init search pattern
 our $Title="rem=Title:";
 our $Type="type=";
@@ -33,26 +33,37 @@ our $Action2="action2=";
 our $Thresh2="thresh2=";
 our $Window2="window2=";
 our $Time="time=";
+our $Context="context=";
+our $Varmap="varmap=";
+our $Script="script=";
+our $Continue="continue=";
+our $Label="label=";
 # Columns ID
 our $IdID=0;
 our $LineID=1;
 our $TitleID=2;
 our $TypeID=3;
 our $PatternID=4;
-our $PtypeID=17;
+our $PtypeID=18;
 our $DescID=5;
 our $ActionID=6;
 our $ThreshID=7;
 our $WindowID=8;
-our $Pattern2ID=16;
-our $Ptype2ID=18;
+our $Pattern2ID=17;
+our $Ptype2ID=19;
 our $Desc2ID=9;
 our $Action2ID=10;
 our $Thresh2ID=11;
 our $Window2ID=12;
 our $TimeID=13;
-our $DisableID=14;
-our $FileID=15;
+our $OtherID=14;
+our $DisableID=15;
+our $FileID=16;
+our $ContextID=20;
+our $VarmapID=21;
+our $ScriptID=22;
+our $ContinueID=23;
+our $LabelID=24;
 # init array
 sub setarray{
   undef @array; 
@@ -74,6 +85,7 @@ sub setarray{
   $array[0][$Thresh2ID]="Thresh2";
   $array[0][$Window2ID]="Win2(s)";
   $array[0][$TimeID]="Time";
+  $array[0][$OtherID]="Other";
   $array[0][$DisableID]="Dis.";
   $array[0][$FileID]="File";
   return @array;
@@ -191,6 +203,29 @@ sub parseunitaryfile {
       } elsif ( $tmpLine =~ /$Prefix$Time/ ){
           valueonly($tmpLine);
           $array[$id-1][$TimeID]=$tmpLine;
+      } elsif ( $tmpLine =~ /$Prefix$Context/ ){
+          valueonly($tmpLine);
+          $array[$id-1][$ContextID]=$tmpLine;
+          print "$. CTX $ContextID: $array[$id-1][$ContextID]\n";
+          $array[$id-1][$OtherID]++;
+      } elsif ( $tmpLine =~ /$Prefix$Varmap/ ){
+          valueonly($tmpLine);
+          $array[$id-1][$VarmapID]=$tmpLine;
+          $array[$id-1][$OtherID]++;
+          print "$. VAR $VarmapID: $array[$id-1][$VarmapID]\n";
+      } elsif ( $tmpLine =~ /$Prefix$Script/ ){
+          valueonly($tmpLine);
+          $array[$id-1][$ScriptID]=$tmpLine;
+          $array[$id-1][$OtherID]++;
+          print "$. SCR $ScriptID: $array[$id-1][$ScriptID]\n";
+      } elsif ( $tmpLine =~ /$Prefix$Continue/ ){
+          valueonly($tmpLine);
+          $array[$id-1][$ContinueID]=$tmpLine;
+          $array[$id-1][$OtherID]++;
+          print "$. CONT $ContinueID: $array[$id-1][$ContinueID]\n";
+#      } elsif ( $tmpLine =~ /$Prefix$Label/ ){
+#          valueonly($tmpLine);
+#          $array[$id-1][$LabelID]=$tmpLine;
       }
     }
   }
@@ -205,9 +240,9 @@ sub print2lines{
   my $disable=$array[$i][$DisableID];
   # Print 1st line
   if ( defined $disable && $disable == 1 ){
-    print FOUT "<tr bgcolor=$BG_DISABLE>";
+    print FOUT "\n<tr bgcolor=$BG_DISABLE>";
   } else {
-    print FOUT "<tr>";
+    print FOUT "\n<tr>";
   }
   # print 0 to 3 rowspan=2
   for ( my $j = 0 ; $j <= 3; $j++ ){
@@ -257,16 +292,23 @@ sub print2lines{
   for ( my $j = 13 ; $j <= $MAXINDEX; $j++ ){
     print FOUT "<td rowspan=2>";
     if (defined $array[$i][$j] && $array[$i][$j] ne '') {
+      if ( $j == $OtherID ){ #replace \ at EOL by \<br> for html layout
+        my $htmltxt = "$array[$i][$ContextID]$array[$i][$VarmapID]$array[$i][$ScriptID]$array[$i][$ContinueID]$array[$i][$LabelID]";
+#        $htmltxt =~ s/\\/\<br\>/g;
+        print FOUT $htmltxt;
+        print $htmltxt;
+      } else {
         print FOUT $array[$i][$j];
+      }
     }
     print FOUT "</td>";
   }
   print FOUT "</tr>";
   ############# Print 2nd line
   if ( defined $disable && $disable == 1 ){
-    print FOUT "<tr bgcolor=$BG_DISABLE>";
+    print FOUT "\n<tr bgcolor=$BG_DISABLE>";
   } else {
-    print FOUT "<tr>";
+    print FOUT "\n<tr>";
   }
   # print 8 if Pair rules
   if ( lc ($array[$i][$TypeID]) eq lc ("PairWithWindow\n") ) {
@@ -299,7 +341,7 @@ sub print1line {
   if ( defined $array[$i][$DisableID] && $array[$i][$DisableID] == 1 ){
 	  print FOUT "<tr bgcolor=$BG_DISABLE>";
   } else {
-    print FOUT "<tr>";
+    print FOUT "\n<tr>";
   }
   # print 0 to 8 and 13 to $MAXINDEX
     for ( my $j = 0 ; $j <= $MAXINDEX; $j++ ){
@@ -323,6 +365,24 @@ sub print1line {
         my $htmltxt = $array[$i][$j];
         $htmltxt  =~ s/\\/\<br\>/g;
         print FOUT $htmltxt;
+      } elsif ( $j == $OtherID ){ #replace \ at EOL by \<br> for html layout
+        my $htmltxt='';
+        if (defined $array[$i][$ContextID] && $array[$i][$ContextID] ne '') {
+          $htmltxt .= "context:$array[$i][$ContextID]";
+        }
+        if (defined $array[$i][$VarmapID] && $array[$i][$VarmapID] ne '') {
+          $htmltxt .= "varmap:$array[$i][$VarmapID]";
+        }
+        if (defined $array[$i][$ScriptID] && $array[$i][$ScriptID] ne '') {
+          $htmltxt .= "script:$array[$i][$ScriptID]";
+        }
+        if (defined $array[$i][$ContinueID] && $array[$i][$ContinueID] ne '') {
+          $htmltxt .= "continue:$array[$i][$ContinueID]";
+        }
+##"label:$array[$i][$LabelID]";
+print "htmltxt : $htmltxt\n";
+        $htmltxt =~ s/\n/\<br\>/g;
+        print FOUT $htmltxt;
       } else {
         print FOUT $array[$i][$j];
       }
@@ -341,7 +401,7 @@ sub htmltable {
   #print FOUT '<div><table class="table table-striped">';
   #print FOUT '<table class="table table-bordered">';
   #print table header
-  print FOUT "<thead><tr>";
+  print FOUT "<thead>\n<tr>";
   # print 0 to 8 and 13 to $MAXINDEX
   for ( my $j = 0 ; $j <= $MAXINDEX; $j++ ){
     print FOUT "<th>"; print FOUT $array[0][$j]; print FOUT "</th>";
@@ -349,11 +409,10 @@ sub htmltable {
         $j = 12 #jump to 13
       }
     }
-    print FOUT "</tr></thead>";
+    print FOUT "</tr>\n</thead>\n";
   #print table body (data)
   print FOUT "<tbody>";
   for ( my $i = 1 ; $i <= $id ; $i++ ){
-    print FOUT "<tr>";
     if ( lc ($array[$i][$TypeID]) eq lc ("SingleWith2Thresholds\n") || lc ($array[$i][$TypeID]) eq lc ("PairWithWindow\n") || lc ($array[$i][$TypeID]) eq lc ("Pair\n") ){
       print2lines($i);
     } else {
@@ -392,7 +451,6 @@ print FOUT '<html>
 sub htmlfooter{
   $datestring = localtime();
   print FOUT "<p align=right>generated by $0 at $datestring</p></body></html>";
-  print FOUT "</body></html>";
 }
 
 ##################################################
@@ -419,7 +477,7 @@ if ($ARGC == 0){ # no arguments provided
 
 ## Start HTML CODE
 htmlheader();
-print FOUT '<table class="table table-bordered">';
+print FOUT "\n<table class=\"table table-bordered\">\n";
 ## check if we have to parse a file or a directory
 if ( -d $ARGUMENTS[0] ) {
   ## search .sec files in a directory
@@ -434,11 +492,11 @@ if ( -d $ARGUMENTS[0] ) {
   }
   closedir(DIR);
 } elsif ( -f $ARGUMENTS[0] ) {
-  $MAXINDEX = 14; ## do not print the filename columns
+  $MAXINDEX--; ## do not print the filename columns
   $id = parseunitaryfile(".",$ARGUMENTS[0]);
   htmltable($id);
 }
-print FOUT "</table>";
+print FOUT "\n</table>\n";
 ## end of sec files parsing
 htmlfooter();
 # End Of HTML code
