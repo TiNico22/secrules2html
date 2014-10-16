@@ -30,6 +30,7 @@ window=900
 ####
 type=Pair
 ptype=RegExp
+continue=GoTo MyLabel
 pattern=kernel: nfs: server (\S+) not responding, still trying
 desc=Server $1 is not responding
 action=pipe '%t: %s' /bin/mail root@localhost
@@ -50,6 +51,8 @@ pattern2=sshd\[\d+\]: Accepted .+ for $1 from $2 port \d+ ssh2
 desc2=SSH login successful for %1 from %2 after initial failure
 action2=logonly
 window=60 
+
+label=MyLabel
 
 #type=PairWithWindow
 #ptype=RegExp
