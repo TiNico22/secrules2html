@@ -37,6 +37,9 @@ our $Context="context=";
 our $Varmap="varmap=";
 our $Script="script=";
 our $Continue="continue=";
+our $Context2="context2=";
+our $Varmap2="varmap2=";
+our $Continue2="continue2=";
 our $Label="label=";
 # Columns ID
 our $IdID=0;
@@ -63,7 +66,10 @@ our $ContextID=20;
 our $VarmapID=21;
 our $ScriptID=22;
 our $ContinueID=23;
-our $LabelID=24;
+our $Context2ID=24;
+our $Varmap2ID=25;
+our $Continue2ID=26;
+our $LabelID=27;
 # init array
 sub setarray{
   undef @array; 
@@ -131,6 +137,26 @@ sub parseunitaryfile {
   my $id=1;
   my $Prefix="^";
   while (<$fh_in>) {
+# label=
+    if (/$Label/ .. /\n\n/) {
+      $array[$id][$LineID]=$.; # starting rules line
+      $array[$id][$FileID]=$filename; # filename
+      my $tmpLine=$_;
+      if ( $tmpLine =~ /^$Label/ ){ # active line
+        valueonly($tmpLine);
+        $Prefix="^";
+        $array[$id][$TypeID]=$tmpLine;
+        $array[$id][$IdID]=$id;
+        $id++;
+      } elsif ( $tmpLine =~ /^# ?$Label/ ) {
+          valueonly($tmpLine);
+          $Prefix="^# ?";
+          $array[$id][$TypeID]=$tmpLine;
+          $array[$id][$IdID]=$id;
+          $array[$id][$DisableID]=1;
+          $id++;
+      }
+    }  
 # search for a block starting by type= and finishing by a blank line
     if (/$Type/ .. /\n\n/) {
       $array[$id][$LineID]=$.; # starting rules line
@@ -206,7 +232,6 @@ sub parseunitaryfile {
       } elsif ( $tmpLine =~ /$Prefix$Context/ ){
           valueonly($tmpLine);
           $array[$id-1][$ContextID]=$tmpLine;
-          print "$. CTX $ContextID: $array[$id-1][$ContextID]\n";
           $array[$id-1][$OtherID]++;
       } elsif ( $tmpLine =~ /$Prefix$Varmap/ ){
           valueonly($tmpLine);
@@ -220,7 +245,21 @@ sub parseunitaryfile {
           valueonly($tmpLine);
           $array[$id-1][$ContinueID]=$tmpLine;
           $array[$id-1][$OtherID]++;
-          print "$. CONT $ContinueID: $array[$id-1][$ContinueID]\n";
+      } elsif ( $tmpLine =~ /$Prefix$Context2/ ){
+          valueonly($tmpLine);
+          $array[$id-1][$Context2ID]=$tmpLine;
+          print "$. CTX $Context2ID: $array[$id-1][$Context2ID]\n";
+          $array[$id-1][$OtherID]++;
+      } elsif ( $tmpLine =~ /$Prefix$Varmap2/ ){
+          valueonly($tmpLine);
+          $array[$id-1][$Varmap2ID]=$tmpLine;
+          $array[$id-1][$OtherID]++;
+          print "$. VAR $Varmap2ID: $array[$id-1][$Varmap2ID]\n";
+      } elsif ( $tmpLine =~ /$Prefix$Continue2/ ){
+          valueonly($tmpLine);
+          $array[$id-1][$Continue2ID]=$tmpLine;
+          $array[$id-1][$OtherID]++;
+          print "$. CONT $Continue2ID: $array[$id-1][$Continue2ID]\n";
 #      } elsif ( $tmpLine =~ /$Prefix$Label/ ){
 #          valueonly($tmpLine);
 #          $array[$id-1][$LabelID]=$tmpLine;
@@ -291,9 +330,22 @@ sub print2lines{
     print FOUT "<td rowspan=2>";
     if (defined $array[$i][$j] && $array[$i][$j] ne '') {
       if ( $j == $OtherID ){ #replace \ at EOL by \<br> for html layout
-        my $htmltxt = "$array[$i][$ContextID]$array[$i][$VarmapID]$array[$i][$ScriptID]$array[$i][$ContinueID]$array[$i][$LabelID]";
-#        $htmltxt =~ s/\\/\<br\>/g;
-        print FOUT $htmltxt;
+        my $htmltxt='';
+        if (defined $array[$i][$ContextID] && $array[$i][$ContextID] ne '') {
+          $htmltxt .= "context:$array[$i][$ContextID]";
+        }
+        if (defined $array[$i][$VarmapID] && $array[$i][$VarmapID] ne '') {
+          $htmltxt .= "varmap:$array[$i][$VarmapID]";
+        }
+        if (defined $array[$i][$ScriptID] && $array[$i][$ScriptID] ne '') {
+          $htmltxt .= "script:$array[$i][$ScriptID]";
+        }
+        if (defined $array[$i][$ContinueID] && $array[$i][$ContinueID] ne '') {
+          $htmltxt .= "continue:$array[$i][$ContinueID]";
+        }
+##"label:$array[$i][$LabelID]";
+      $htmltxt =~ s/\n/\<br\>/g;
+      print FOUT $htmltxt;
       } else {
         print FOUT $array[$i][$j];
       }
@@ -328,6 +380,22 @@ sub print2lines{
     }
     print FOUT "</td>";
   }
+  ## other 2
+  if (defined $array[$i][$OtherID] && $array[$i][$OtherID] ne '') {
+  #replace \ at EOL by \<br> for html layout
+    my $htmltxt='';
+    if (defined $array[$i][$Context2ID] && $array[$i][$Context2ID] ne '') {
+      $htmltxt .= "context:$array[$i][$Context2ID]";
+    }
+    if (defined $array[$i][$Varmap2ID] && $array[$i][$Varmap2ID] ne '') {
+      $htmltxt .= "varmap:$array[$i][$Varmap2ID]";
+    }
+    if (defined $array[$i][$Continue2ID] && $array[$i][$Continue2ID] ne '') {
+      $htmltxt .= "continue:$array[$i][$Continue2ID]";
+    }
+    $htmltxt =~ s/\n/\<br\>/g;
+    print FOUT $htmltxt;
+  } 
   print FOUT "</tr>";
 }
 
@@ -377,7 +445,6 @@ sub print1line {
           $htmltxt .= "continue:$array[$i][$ContinueID]";
         }
 ##"label:$array[$i][$LabelID]";
-print "htmltxt : $htmltxt\n";
         $htmltxt =~ s/\n/\<br\>/g;
         print FOUT $htmltxt;
       } else {
