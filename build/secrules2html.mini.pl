@@ -102,7 +102,7 @@ advice:
       
 # replace "key=value" by "value" only 
 sub valueonly {
-  $valueonly = $_[0] =~ s/[a-zA-Z]*[0-9]?\=(.*)/$1/;
+  $valueonly = $_[0] =~ s/\#?[a-zA-Z]*[0-9]?\=(.*)/$1/;
   chomp $valueonly;
   return $valueonly;
 }
