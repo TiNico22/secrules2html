@@ -212,12 +212,10 @@ sub parseunitaryfile {
           valueonly($tmpLine);
           $array[$id-1][$VarmapID]=$tmpLine;
           $array[$id-1][$OtherID]++;
-          print "$. VAR $VarmapID: $array[$id-1][$VarmapID]\n";
       } elsif ( $tmpLine =~ /$Prefix$Script/ ){
           valueonly($tmpLine);
           $array[$id-1][$ScriptID]=$tmpLine;
           $array[$id-1][$OtherID]++;
-          print "$. SCR $ScriptID: $array[$id-1][$ScriptID]\n";
       } elsif ( $tmpLine =~ /$Prefix$Continue/ ){
           valueonly($tmpLine);
           $array[$id-1][$ContinueID]=$tmpLine;
@@ -296,7 +294,6 @@ sub print2lines{
         my $htmltxt = "$array[$i][$ContextID]$array[$i][$VarmapID]$array[$i][$ScriptID]$array[$i][$ContinueID]$array[$i][$LabelID]";
 #        $htmltxt =~ s/\\/\<br\>/g;
         print FOUT $htmltxt;
-        print $htmltxt;
       } else {
         print FOUT $array[$i][$j];
       }
