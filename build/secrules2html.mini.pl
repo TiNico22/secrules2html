@@ -27,7 +27,7 @@ our $Action="action=";
 our $Thresh="thresh=";
 our $Window="window=";
 our $Pattern2="pattern2=";
-our $Ptype2="type2=";
+our $Ptype2="ptype2=";
 our $Desc2="desc2=";
 our $Action2="action2=";
 our $Thresh2="thresh2=";
@@ -39,13 +39,13 @@ our $LineID=1;
 our $TitleID=2;
 our $TypeID=3;
 our $PatternID=4;
-our $PtypeID=19;
+our $PtypeID=17;
 our $DescID=5;
 our $ActionID=6;
 our $ThreshID=7;
 our $WindowID=8;
-our $Pattern2ID=20;
-our $Ptype2ID=21;
+our $Pattern2ID=16;
+our $Ptype2ID=18;
 our $Desc2ID=9;
 our $Action2ID=10;
 our $Thresh2ID=11;
@@ -169,6 +169,7 @@ sub parseunitaryfile {
           $array[$id-1][$Pattern2ID]=$tmpLine;
       } elsif ( $tmpLine =~ /$Prefix$Ptype2/ ){
           valueonly($tmpLine);
+          chomp($tmpLine);
           $array[$id-1][$Ptype2ID]=$tmpLine;
       } elsif ( $tmpLine =~ /$Prefix$Desc2/ ){
           valueonly($tmpLine);
@@ -198,8 +199,8 @@ sub parseunitaryfile {
   return $id;
 }
 
-# HTML output for  Pair and Pair with window
-sub printPAIR{
+# HTML output for rowspan layout (Single W2T & Pair*) 
+sub print2lines{
   my $i = $_[0];
   my $disable=$array[$i][$DisableID];
   # Print 1st line
@@ -208,76 +209,8 @@ sub printPAIR{
   } else {
     print FOUT "<tr>";
   }
-  # print 0 to 4 rowspan=2
-  for ( my $j = 0 ; $j <= 4; $j++ ){
-    print FOUT "<td rowspan=2>";
-    if (defined $array[$i][$j] && $array[$i][$j] ne '') {
-      if ( $j == $TypeID ){
-        print FOUT "Pair| Pair WT"; ###### TODO
-      } else {
-        print FOUT $array[$i][$j];
-      }
-    }
-    print FOUT "</td>";
-  }
-  # print 5 to 8 desc1 ...
-  for ( my $j = 5 ; $j <= 8; $j++ ){
-    print FOUT "<td>";
-    if (defined $array[$i][$j] && $array[$i][$j] ne '') {
-      if ( $j == $ActionID ){ #replace \ at EOL by \<br> for html layout
-        my $htmltxt = $array[$i][$j];
-        $htmltxt =~ s/\\/\<br\>/g;
-        print FOUT $htmltxt;
-      } else {
-        print FOUT $array[$i][$j];
-      }
-    }
-    print FOUT "</td>";
-  }
-  # print 13 to $MAXINDEX rowspan=2
-  for ( my $j = 13 ; $j <= $MAXINDEX; $j++ ){
-    print FOUT "<td rowspan=2>";
-    if (defined $array[$i][$j] && $array[$i][$j] ne '') {
-        print FOUT $array[$i][$j];
-    }
-    print FOUT "</td>";
-  }
-  print FOUT "</tr>";
-  # Print 2nd line
-  if ( defined $disable && $disable == 1 ){
-    print FOUT "<tr bgcolor=$BG_DISABLE>";
-  } else {
-    print FOUT "<tr>";
-  }
-  # print 9 to 12 desc2 to window2 in a specific row 
-   for ( my $j = 9 ; $j <= 12; $j++ ){
-    print FOUT "<td>";
-    if (defined $array[$i][$j] && $array[$i][$j] ne '') {
-      if ( $j == $Action2ID ){ #replace \ at EOL by \<br> for html layout
-        my $htmltxt = $array[$i][$j];
-        $htmltxt =~ s/\\/\<br\>/g;
-        print FOUT $htmltxt;
-      } else {
-        print FOUT $array[$i][$j];
-      }
-    }
-    print FOUT "</td>";
-  }
-  print FOUT "</tr>";
-}
-
-# HTML output for Single With 2 Thresh
-sub printSW2T{
-  my $i = $_[0];
-  my $disable=$array[$i][$DisableID];
-  # Print 1st line
-  if ( defined $disable && $disable == 1 ){
-    print FOUT "<tr bgcolor=$BG_DISABLE>";
-  } else {
-    print FOUT "<tr>";
-  }
-  # print 0 to 4 rowspan=2
-  for ( my $j = 0 ; $j <= 4; $j++ ){
+  # print 0 to 3 rowspan=2
+  for ( my $j = 0 ; $j <= 3; $j++ ){
     if ( defined $array[$i][$j] && $j == $PatternID ) {
       print FOUT "<td rowspan=2 title=\"$array[$i][$PtypeID]\">";
     } else {
@@ -285,12 +218,26 @@ sub printSW2T{
     }
     if (defined $array[$i][$j] && $array[$i][$j] ne '') {
       if ( $j == $TypeID ){
-        print FOUT "Single W2T"
+        if ( lc ($array[$i][$j]) eq lc ("SingleWith2Thresholds\n") ) {
+          print FOUT "Single W2T"
+        } elsif ( lc ($array[$i][$j]) eq lc ("PairWithWindow\n") ) {
+          print FOUT "Pair Win";
+        } elsif ( lc ($array[$i][$j]) eq lc ("Pair\n") ) {
+          print FOUT "Pair";
+        }
       } else {
         print FOUT $array[$i][$j];
       }
     }
     print FOUT "</td>";
+  }
+  # print 4 
+  if ( lc ($array[$i][$TypeID]) eq lc ("PairWithWindow\n") ) {
+    print FOUT "<td title=\"$array[$i][$PtypeID]\">$array[$i][$PatternID]</td>";
+  } elsif ( lc ($array[$i][$TypeID]) eq lc ("Pair\n") ) {
+    print FOUT "<td title=\"$array[$i][$PtypeID]\">$array[$i][$PatternID]</td>";
+  } else {
+      print FOUT "<td rowspan=2 title=\"$array[$i][$PtypeID]\">$array[$i][$PatternID]</td>";
   }
   # print 5 to 8 desc1 ...
   for ( my $j = 5 ; $j <= 8; $j++ ){
@@ -315,12 +262,19 @@ sub printSW2T{
     print FOUT "</td>";
   }
   print FOUT "</tr>";
-  # Print 2nd line
+  ############# Print 2nd line
   if ( defined $disable && $disable == 1 ){
     print FOUT "<tr bgcolor=$BG_DISABLE>";
   } else {
     print FOUT "<tr>";
   }
+  # print 8 if Pair rules
+  if ( lc ($array[$i][$TypeID]) eq lc ("PairWithWindow\n") ) {
+      print FOUT "<td title=\"$array[$i][$Ptype2ID]\">$array[$i][$Pattern2ID]</td>";
+  } elsif ( lc ($array[$i][$TypeID]) eq lc ("Pair\n") ) {
+      print FOUT "<td title=\"$array[$i][$Ptype2ID]\">$array[$i][$Pattern2ID]</td>";
+  }
+
   # print 9 to 12 desc2 to window2 in a specific row 
    for ( my $j = 9 ; $j <= 12; $j++ ){
     print FOUT "<td>";
@@ -338,8 +292,8 @@ sub printSW2T{
   print FOUT "</tr>";
 }
 
-# output for line other than Single With 2 Thresh
-sub printSTD {
+# output for mono line type
+sub print1line {
   my $i = $_[0];
   # Print 1st line
   if ( defined $array[$i][$DisableID] && $array[$i][$DisableID] == 1 ){
@@ -400,10 +354,10 @@ sub htmltable {
   print FOUT "<tbody>";
   for ( my $i = 1 ; $i <= $id ; $i++ ){
     print FOUT "<tr>";
-    if ( lc ($array[$i][$TypeID]) eq lc ("SingleWith2Thresholds\n") ){
-      printSW2T($i);
+    if ( lc ($array[$i][$TypeID]) eq lc ("SingleWith2Thresholds\n") || lc ($array[$i][$TypeID]) eq lc ("PairWithWindow\n") || lc ($array[$i][$TypeID]) eq lc ("Pair\n") ){
+      print2lines($i);
     } else {
-      printSTD($i);#print 1 row
+      print1line($i);#print 1 row
     }
   }
   #print FOUT "</table>";
