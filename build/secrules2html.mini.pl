@@ -145,13 +145,14 @@ sub parseunitaryfile {
       if ( $tmpLine =~ /^$Label/ ){ # active line
         valueonly($tmpLine);
         $Prefix="^";
-        $array[$id][$TypeID]=$tmpLine;
+        $array[$id][$TypeID]="<a id=$tmpLine>$tmpLine</a>";
         $array[$id][$IdID]=$id;
         $id++;
       } elsif ( $tmpLine =~ /^# ?$Label/ ) {
           valueonly($tmpLine);
           $Prefix="^# ?";
-          $array[$id][$TypeID]=$tmpLine;
+          $array[$id][$TypeID]="<a id=$tmpLine>$tmpLine</a>";
+          ##$array[$id][$TypeID]=$tmpLine;
           $array[$id][$IdID]=$id;
           $array[$id][$DisableID]=1;
           $id++;
@@ -337,7 +338,12 @@ sub print2lines{
           $htmltxt .= "script:$array[$i][$ScriptID]";
         }
         if (defined $array[$i][$ContinueID] && $array[$i][$ContinueID] ne '') {
-          $htmltxt .= "continue:$array[$i][$ContinueID]";
+          chomp($array[$i][$ContinueID]);
+          if ( $array[$i][$ContinueID] =~ /^GoTo .*/ ) {
+            my $idlabel = $array[$i][$ContinueID];
+            $idlabel =~ s/^GoTo (.*)/$1/;
+            $htmltxt .= "<a href=\#$idlabel>continue:$array[$i][$ContinueID]</a>";
+          }
         }
         $htmltxt =~ s/\n/\<br\>/g;
         print FOUT "<td>";
