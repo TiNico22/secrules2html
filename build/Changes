@@ -2,6 +2,7 @@ Revision history
 
 0.2
 add directory feature to parse a directory for generating one html with all secrules
+add support for key : context, varmap, continue, script and label
 
 0.1.1
 bugfix in multiline
