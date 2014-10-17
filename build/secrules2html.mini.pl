@@ -248,21 +248,15 @@ sub parseunitaryfile {
       } elsif ( $tmpLine =~ /$Prefix$Context2/ ){
           valueonly($tmpLine);
           $array[$id-1][$Context2ID]=$tmpLine;
-          print "$. CTX $Context2ID: $array[$id-1][$Context2ID]\n";
           $array[$id-1][$OtherID]++;
       } elsif ( $tmpLine =~ /$Prefix$Varmap2/ ){
           valueonly($tmpLine);
           $array[$id-1][$Varmap2ID]=$tmpLine;
           $array[$id-1][$OtherID]++;
-          print "$. VAR $Varmap2ID: $array[$id-1][$Varmap2ID]\n";
       } elsif ( $tmpLine =~ /$Prefix$Continue2/ ){
           valueonly($tmpLine);
           $array[$id-1][$Continue2ID]=$tmpLine;
           $array[$id-1][$OtherID]++;
-          print "$. CONT $Continue2ID: $array[$id-1][$Continue2ID]\n";
-#      } elsif ( $tmpLine =~ /$Prefix$Label/ ){
-#          valueonly($tmpLine);
-#          $array[$id-1][$LabelID]=$tmpLine;
       }
     }
   }
@@ -327,7 +321,9 @@ sub print2lines{
   }
   # print 13 to $MAXINDEX rowspan=2
   for ( my $j = 13 ; $j <= $MAXINDEX; $j++ ){
-    print FOUT "<td rowspan=2>";
+    if ( $j == $TimeID ||  $j == $DisableID || $j == $FileID ) {
+      print FOUT "<td rowspan=2>";
+    }
     if (defined $array[$i][$j] && $array[$i][$j] ne '') {
       if ( $j == $OtherID ){ #replace \ at EOL by \<br> for html layout
         my $htmltxt='';
@@ -343,12 +339,14 @@ sub print2lines{
         if (defined $array[$i][$ContinueID] && $array[$i][$ContinueID] ne '') {
           $htmltxt .= "continue:$array[$i][$ContinueID]";
         }
-##"label:$array[$i][$LabelID]";
-      $htmltxt =~ s/\n/\<br\>/g;
-      print FOUT $htmltxt;
-      } else {
+        $htmltxt =~ s/\n/\<br\>/g;
+        print FOUT "<td>";
+        print FOUT $htmltxt;
+      } elsif ( $j == $FileID ) {
         print FOUT $array[$i][$j];
-      }
+      }  
+    } elsif ( $j ==$OtherID ) {
+      print FOUT "<td>";
     }
     print FOUT "</td>";
   }
@@ -394,7 +392,9 @@ sub print2lines{
       $htmltxt .= "continue:$array[$i][$Continue2ID]";
     }
     $htmltxt =~ s/\n/\<br\>/g;
-    print FOUT $htmltxt;
+    print FOUT "<td>$htmltxt</td>";
+  } else {
+    print FOUT "<td></td>";
   } 
   print FOUT "</tr>";
 }
@@ -444,7 +444,6 @@ sub print1line {
         if (defined $array[$i][$ContinueID] && $array[$i][$ContinueID] ne '') {
           $htmltxt .= "continue:$array[$i][$ContinueID]";
         }
-##"label:$array[$i][$LabelID]";
         $htmltxt =~ s/\n/\<br\>/g;
         print FOUT $htmltxt;
       } else {
@@ -462,8 +461,6 @@ sub print1line {
 ## print a html table wich contain a secrules content
 sub htmltable {
   #create a new table
-  #print FOUT '<div><table class="table table-striped">';
-  #print FOUT '<table class="table table-bordered">';
   #print table header
   print FOUT "<thead>\n<tr>";
   # print 0 to 8 and 13 to $MAXINDEX
