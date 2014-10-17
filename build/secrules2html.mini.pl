@@ -339,9 +339,9 @@ sub print2lines{
         }
         if (defined $array[$i][$ContinueID] && $array[$i][$ContinueID] ne '') {
           chomp($array[$i][$ContinueID]);
-          if ( $array[$i][$ContinueID] =~ /^GoTo .*/ ) {
+          if ( $array[$i][$ContinueID] =~ /^[G|g][O|o][T|t][O|o] .*/ ) {
             my $idlabel = $array[$i][$ContinueID];
-            $idlabel =~ s/^GoTo (.*)/$1/;
+            $idlabel =~ s/^[G|g][O|o][T|t][O|o] (.*)/$1/;
             $htmltxt .= "<a href=\#$idlabel>continue:$array[$i][$ContinueID]</a>";
           }
         }

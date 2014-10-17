@@ -30,7 +30,7 @@ window=900
 ####
 type=Pair
 ptype=RegExp
-continue=GoTo MyLabel
+continue=GOTO MyLabel2
 pattern=kernel: nfs: server (\S+) not responding, still trying
 desc=Server $1 is not responding
 action=pipe '%t: %s' /bin/mail root@localhost
@@ -52,8 +52,6 @@ desc2=SSH login successful for %1 from %2 after initial failure
 action2=logonly
 window=60 
 
-label=MyLabel
-
 #type=PairWithWindow
 #ptype=RegExp
 #pattern=sshd\[\d+\]: Failed .+ for (\S+) from ([\d.]+) port \d+ ssh2
@@ -65,6 +63,8 @@ label=MyLabel
 #varmap2= user=1; ip=2
 #action2=logonly
 #window=60 
+
+label=MyLabel2
 
 ####
 type=SingleWithThreshold
@@ -158,10 +158,12 @@ rem=Title:3/3
 ptype=SubStr
 pattern=WAITING_FOR_BACKUP
 desc=Quarterly backup not completed on time!
+varmap=test1
 action=pipe '%t: %s' /bin/mail root@localhost
 ptype2=SubStr
 pattern2=BACKUP READY
 desc2=Quarterly backup successfully completed
+varmap2=test2
 action2=none
 window=1800 
 
