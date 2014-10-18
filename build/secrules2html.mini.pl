@@ -430,7 +430,8 @@ sub print1line {
         print FOUT "Single Supp";
       } elsif ( $j == $TypeID && lc ($array[$i][$j]) eq lc ("PairWithWindow\n") ) {
         print FOUT "Pair Win";
-      } elsif ( $j == $TypeID && lc ($array[$i][$j]) eq lc ("EventGroup\n") ) {
+      ###} elsif ( $j == $TypeID && lc ($array[$i][$j]) eq lc ("EventGroup\d\n") ) {
+      } elsif ( $j == $TypeID && lc ($array[$i][$j]) =~ /eventgroup\d\n/ ) {
         print FOUT "Event Group";
       } elsif ( $j == $ActionID ){ #replace \ at EOL by \<br> for html layout
         my $htmltxt = $array[$i][$j];
