@@ -40,6 +40,9 @@ our $Continue="continue=";
 our $Context2="context2=";
 our $Varmap2="varmap2=";
 our $Continue2="continue2=";
+our $Init="init=";
+our $Slide="slide=";
+our $End="end=";
 our $Label="label=";
 # Columns ID
 our $IdID=0;
@@ -69,7 +72,10 @@ our $ContinueID=23;
 our $Context2ID=24;
 our $Varmap2ID=25;
 our $Continue2ID=26;
-our $LabelID=27;
+our $InitID=27;
+our $SlideID=28;
+our $EndID=29;
+our $LabelID=30;
 # init array
 sub setarray{
   undef @array; 
@@ -169,6 +175,11 @@ sub parseunitaryfile {
         $array[$id][$TypeID]=$tmpLine;
         $array[$id][$IdID]=$id;
         $id++;
+        # Identify for EventGroupN the "N" value 2 to 99
+        if ( lc ($tmpLine) =~ /eventgroup/ ) {
+          $tmpLine =~ s/[a-zA-Z]*([0-9]{1,2})/$1/;
+          $idEventGroup = $tmpLine;
+        }
       } elsif ( $tmpLine =~ /^# ?$Type/ ) {
           valueonly($tmpLine);
           $Prefix="^# ?";
@@ -257,6 +268,22 @@ sub parseunitaryfile {
       } elsif ( $tmpLine =~ /$Prefix$Continue2/ ){
           valueonly($tmpLine);
           $array[$id-1][$Continue2ID]=$tmpLine;
+          $array[$id-1][$OtherID]++;
+      ###
+      } elsif ( $tmpLine =~ /$Prefix$Init/ ){
+          valueonly($tmpLine);
+          $array[$id-1][$InitID]=$tmpLine;
+print "init:$array[$id-1][$InitID]\n";
+          $array[$id-1][$OtherID]++;
+      } elsif ( $tmpLine =~ /$Prefix$Slide/ ){
+          valueonly($tmpLine);
+          $array[$id-1][$SlideID]=$tmpLine;
+print "slide:$array[$id-1][$SlideID]\n";
+          $array[$id-1][$OtherID]++;
+      } elsif ( $tmpLine =~ /$Prefix$End/ ){
+          valueonly($tmpLine);
+          $array[$id-1][$EndID]=$tmpLine;
+print "end:$array[$id-1][$EndID]\n";
           $array[$id-1][$OtherID]++;
       }
     }
@@ -431,7 +458,7 @@ sub print1line {
       } elsif ( $j == $TypeID && lc ($array[$i][$j]) eq lc ("PairWithWindow\n") ) {
         print FOUT "Pair Win";
       ###} elsif ( $j == $TypeID && lc ($array[$i][$j]) eq lc ("EventGroup\d\n") ) {
-      } elsif ( $j == $TypeID && lc ($array[$i][$j]) =~ /eventgroup\d\n/ ) {
+      } elsif ( $j == $TypeID && lc ($array[$i][$j]) =~ /eventgroup\d+\n/ ) {
         print FOUT "Event Group";
       } elsif ( $j == $ActionID ){ #replace \ at EOL by \<br> for html layout
         my $htmltxt = $array[$i][$j];
@@ -450,6 +477,15 @@ sub print1line {
         }
         if (defined $array[$i][$ContinueID] && $array[$i][$ContinueID] ne '') {
           $htmltxt .= "continue:$array[$i][$ContinueID]";
+        }
+        if (defined $array[$i][$InitID] && $array[$i][$InitID] ne '') {
+          $htmltxt .= "init:$array[$i][$InitID]";
+        }
+        if (defined $array[$i][$SlideID] && $array[$i][$SlideID] ne '') {
+          $htmltxt .= "slide:$array[$i][$SlideID]";
+        }
+        if (defined $array[$i][$EndID] && $array[$i][$EndID] ne '') {
+          $htmltxt .= "end:$array[$i][$EndID]";
         }
         $htmltxt =~ s/\n/\<br\>/g;
         print FOUT $htmltxt;
