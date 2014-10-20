@@ -11,6 +11,9 @@
 use feature ':5.10';
 use warnings;
 
+##################################################
+# Global VAR 
+##################################################
 our $BG_DISABLE="wheat"; ## background color for disabled rules
 our $DIRNAME = $ARGV[0];
 our $ARGC = scalar(@ARGV);
@@ -76,6 +79,11 @@ our $InitID=27;
 our $SlideID=28;
 our $EndID=29;
 our $LabelID=30;
+
+##################################################
+# Functions
+##################################################
+
 # init array
 sub setarray{
   undef @array; 
@@ -102,6 +110,7 @@ sub setarray{
   $array[0][$FileID]="File";
   return @array;
 }
+
 #Print usage on tty
 sub usage_display {
   print "usage: ./secrules2html.mini.pl <FILENAME|DIRNAME> [<OUTPUTNAME>]\n
@@ -111,13 +120,22 @@ sub usage_display {
 advice:  
  If you want to give Title to your rules use rem=Title:<MyTitle>\n\n";
 }
-      
+
+# replace crontab format by human readable format
+sub readableTime {
+  my $TimeToConvert = $_[0];
+  print "$TimeToConvert";
+  my @arrayDate = split(/\s/,$TimeToConvert);
+  print "run every:$arrayDate[2] of $arrayDate[3]month at $arrayDate[1]:$arrayDate[0]\n";
+}
+
 # replace "key=value" by "value" only 
 sub valueonly {
   $valueonly = $_[0] =~ s/\#?[a-zA-Z]*[0-9]?\=(.*)/$1/;
   chomp $valueonly;
   return $valueonly;
 }
+
 # replace "rem=Title:value" by "value" only 
 sub titlevalueonly {
   $titlevalueonly = $_[0] =~ s/.*\=Title:(.*)/$1/g;
@@ -178,7 +196,7 @@ sub parseunitaryfile {
         # Identify for EventGroupN the "N" value 2 to 99
         if ( lc ($tmpLine) =~ /eventgroup/ ) {
           $tmpLine =~ s/[a-zA-Z]*([0-9]{1,2})/$1/;
-          $idEventGroup = $tmpLine;
+          ### $idEventGroup = $tmpLine;
         }
       } elsif ( $tmpLine =~ /^# ?$Type/ ) {
           valueonly($tmpLine);
@@ -269,21 +287,17 @@ sub parseunitaryfile {
           valueonly($tmpLine);
           $array[$id-1][$Continue2ID]=$tmpLine;
           $array[$id-1][$OtherID]++;
-      ###
       } elsif ( $tmpLine =~ /$Prefix$Init/ ){
           valueonly($tmpLine);
           $array[$id-1][$InitID]=$tmpLine;
-print "init:$array[$id-1][$InitID]\n";
           $array[$id-1][$OtherID]++;
       } elsif ( $tmpLine =~ /$Prefix$Slide/ ){
           valueonly($tmpLine);
           $array[$id-1][$SlideID]=$tmpLine;
-print "slide:$array[$id-1][$SlideID]\n";
           $array[$id-1][$OtherID]++;
       } elsif ( $tmpLine =~ /$Prefix$End/ ){
           valueonly($tmpLine);
           $array[$id-1][$EndID]=$tmpLine;
-print "end:$array[$id-1][$EndID]\n";
           $array[$id-1][$OtherID]++;
       }
     }
@@ -292,8 +306,9 @@ print "end:$array[$id-1][$EndID]\n";
   close ($fh_in);
   return $id;
 }
-
+##################################################
 # HTML output for rowspan layout (Single W2T & Pair*) 
+##################################################
 sub print2lines{
   my $i = $_[0];
   my $disable=$array[$i][$DisableID];
@@ -432,7 +447,9 @@ sub print2lines{
   print FOUT "</tr>";
 }
 
+##################################################
 # output for mono line type
+##################################################
 sub print1line {
   my $i = $_[0];
   # Print 1st line
@@ -501,7 +518,9 @@ sub print1line {
   print FOUT "</tr>";
 }   
 
+##################################################
 ## print a html table wich contain a secrules content
+##################################################
 sub htmltable {
   #create a new table
   #print table header
@@ -523,7 +542,6 @@ sub htmltable {
       print1line($i);#print 1 row
     }
   }
-  #print FOUT "</table>";
 }
 ##################################################
 ## generate the HML Header                      ##
