@@ -208,6 +208,11 @@ sub parseunitaryfile {
       } elsif ( $tmpLine =~ /$Prefix$Title/ ){
           titlevalueonly($tmpLine);
           $array[$id-1][$TitleID]=$tmpLine;
+          while ( $array[$id-1][$TitleID] =~ /\\$/ ) { # multiligne rem=
+            $tmpLine=<$fh_in>;
+            $tmpLine=~ s/^#(.*)/$1/;
+            $array[$id-1][$TitleID].=$tmpLine;
+          }
       } elsif ( $tmpLine =~ /$Prefix$Pattern/ ){
           valueonly($tmpLine);
           $array[$id-1][$PatternID]=$tmpLine;
